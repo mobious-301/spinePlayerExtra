@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+</html>
+
+<script src="./spine-player.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/@esotericsoftware/spine-player@4.0.*/dist/spine-player.css">
+
+<div id="player-container" style="width: 1000px; height: 1000px;"></div>
+
+<script>
+    new spine.SpinePlayer("player-container", {
+        // jsonUrl: "http://esotericsoftware.com/files/examples/4.0/spineboy/export/spineboy-pro.json",
+        // jsonUrl:"./lang.json",
+        jsonUrl:"./shengli.json",
+        // atlasUrl: "http://esotericsoftware.com/files/examples/4.0/spineboy/export/spineboy.atlas"
+        // atlasUrl: "./sainuo_in.atlas",
+        atlasUrl: "./shengli.atlas",
+        animation:"animation",
+        showControls:false,
+        debug: {
+            // bones: true, 
+            regions: true,
+            meshes: true,
+            bounds: true,
+            paths: true,
+            clipping: true,
+            points: true,
+            hulls: true,
+            // x: 0,
+            // y: 0,
+            // width: 300,
+            // height: 300,
+            
+        },
+        alpha: true,
+        backgroundColor:"#00000000",
+        viewport: {
+                // x: 0,
+                // y: 0,
+                // width: 3000,
+                // height: 3000,
+                // padLeft: "5%",
+                // padRight: "5%",
+                // padTop: "5%",
+                // padBottom: "5%",
+                debugRender: true 
+            },
+            premultipliedAlpha: false//材质透明通道
+    });
+</script>
