@@ -161,7 +161,8 @@ var spine = (() => {
     VertexAttribute: () => VertexAttribute,
     VertexAttributeType: () => VertexAttributeType,
     WebGLBlendModeConverter: () => WebGLBlendModeConverter,
-    WindowedMean: () => WindowedMean
+    WindowedMean: () => WindowedMean,
+    AutoBoneloader:()=> AutoBoneloader
   });
 
   // spine-core/src/Utils.ts
@@ -5522,6 +5523,10 @@ var spine = (() => {
       this.scaleY = 1;
       this.x = 0;
       this.y = 0;
+      //##plus
+      this.extra = null;
+      this.extraConfig = null;
+      //
       if (!data)
         throw new Error("data cannot be null.");
       this.data = data;
@@ -5563,6 +5568,11 @@ var spine = (() => {
         this.pathConstraints.push(new PathConstraint(pathConstraintData, this));
       }
       this.color = new Color(1, 1, 1, 1);
+      //##plus
+      this.extra = data.extra;
+      this.extraConfig = data.extraConfig;
+
+      //
       this.updateCache();
     }
     updateCache() {
@@ -5733,10 +5743,16 @@ var spine = (() => {
     updateWorldTransform() {
       let bones = this.bones;
       for (let i = 0, n = bones.length; i < n; i++) {
+        //##plus
+        let at =0;
+        // at=Math.random()*5;
+        //##入口
+        //
         let bone = bones[i];
         bone.ax = bone.x;
         bone.ay = bone.y;
-        bone.arotation = bone.rotation;
+        // bone.arotation = bone.rotation;
+        bone.arotation =bone.rotation;
         bone.ascaleX = bone.scaleX;
         bone.ascaleY = bone.scaleY;
         bone.ashearX = bone.shearX;
@@ -6004,6 +6020,9 @@ var spine = (() => {
       this.fps = 0;
       this.imagesPath = null;
       this.audioPath = null;
+      //##plus
+      this.extra = null;
+      this.extraConfig = null;
     }
     findBone(boneName) {
       if (!boneName)
@@ -6503,6 +6522,8 @@ var spine = (() => {
             skin.setAttachment(slotIndex, name, attachment);
         }
       }
+      
+
       return skin;
     }
     readAttachment(input, skeletonData, skin, slotIndex, attachmentName, nonessential) {
@@ -8180,6 +8201,15 @@ var spine = (() => {
           this.readAnimation(animationMap, animationName, skeletonData);
         }
       }
+      //n.extra = r.extra || {}, n.extraConfig = r.extraConfig || {}
+      //##plus 只是read  真的在load
+      if (root.extra) {
+        skeletonData.extra = root.extra;
+      }
+      if (root.extraConfig) {
+        skeletonData.extraConfig=root.extraConfig
+      }
+      //
       return skeletonData;
     }
     readAttachment(map, skin, slotIndex, name, skeletonData) {
@@ -11592,18 +11622,18 @@ var spine = (() => {
       if (config.showControls === void 0)
         config.showControls = true;
       let controls = config.showControls ? `
-<div class="spine-player-controls spine-player-popup-parent spine-player-controls-hidden">
-<div class="spine-player-timeline"></div>
-<div class="spine-player-buttons">
-<button class="spine-player-button spine-player-button-icon-pause"></button>
-<div class="spine-player-button-spacer"></div>
-<button class="spine-player-button spine-player-button-icon-speed"></button>
-<button class="spine-player-button spine-player-button-icon-animations"></button>
-<button class="spine-player-button spine-player-button-icon-skins"></button>
-<button class="spine-player-button spine-player-button-icon-settings"></button>
-<button class="spine-player-button spine-player-button-icon-fullscreen"></button>
-<img class="spine-player-button-icon-spine-logo" src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20104%2031.16%22%3E%3Cpath%20d%3D%22M104%2012.68a1.31%201.31%200%200%201-.37%201%201.28%201.28%200%200%201-.85.31H91.57a10.51%2010.51%200%200%200%20.29%202.55%204.92%204.92%200%200%200%201%202%204.27%204.27%200%200%200%201.64%201.26%206.89%206.89%200%200%200%202.6.44%2010.66%2010.66%200%200%200%202.17-.2%2012.81%2012.81%200%200%200%201.64-.44q.69-.25%201.14-.44a1.87%201.87%200%200%201%20.68-.2.44.44%200%200%201%20.27.04.43.43%200%200%201%20.16.2%201.38%201.38%200%200%201%20.09.37%204.89%204.89%200%200%201%200%20.58%204.14%204.14%200%200%201%200%20.43v.32a.83.83%200%200%201-.09.26%201.1%201.1%200%200%201-.17.22%202.77%202.77%200%200%201-.61.34%208.94%208.94%200%200%201-1.32.46%2018.54%2018.54%200%200%201-1.88.41%2013.78%2013.78%200%200%201-2.28.18%2010.55%2010.55%200%200%201-3.68-.59%206.82%206.82%200%200%201-2.66-1.74%207.44%207.44%200%200%201-1.63-2.89%2013.48%2013.48%200%200%201-.55-4%2012.76%2012.76%200%200%201%20.57-3.94%208.35%208.35%200%200%201%201.64-3%207.15%207.15%200%200%201%202.58-1.87%208.47%208.47%200%200%201%203.39-.65%208.19%208.19%200%200%201%203.41.64%206.46%206.46%200%200%201%202.32%201.73%207%207%200%200%201%201.3%202.54%2011.17%2011.17%200%200%201%20.43%203.13zm-3.14-.93a5.69%205.69%200%200%200-1.09-3.86%204.17%204.17%200%200%200-3.42-1.4%204.52%204.52%200%200%200-2%20.44%204.41%204.41%200%200%200-1.47%201.15A5.29%205.29%200%200%200%2092%209.75a7%207%200%200%200-.36%202zM80.68%2021.94a.42.42%200%200%201-.08.26.59.59%200%200%201-.25.18%201.74%201.74%200%200%201-.47.11%206.31%206.31%200%200%201-.76%200%206.5%206.5%200%200%201-.78%200%201.74%201.74%200%200%201-.47-.11.59.59%200%200%201-.25-.18.42.42%200%200%201-.08-.26V12a9.8%209.8%200%200%200-.23-2.35%204.86%204.86%200%200%200-.66-1.53%202.88%202.88%200%200%200-1.13-1%203.57%203.57%200%200%200-1.6-.34%204%204%200%200%200-2.35.83A12.71%2012.71%200%200%200%2069.11%2010v11.9a.42.42%200%200%201-.08.26.59.59%200%200%201-.25.18%201.74%201.74%200%200%201-.47.11%206.51%206.51%200%200%201-.78%200%206.31%206.31%200%200%201-.76%200%201.88%201.88%200%200%201-.48-.11.52.52%200%200%201-.25-.18.46.46%200%200%201-.07-.26v-17a.53.53%200%200%201%20.03-.21.5.5%200%200%201%20.23-.19%201.28%201.28%200%200%201%20.44-.11%208.53%208.53%200%200%201%201.39%200%201.12%201.12%200%200%201%20.43.11.6.6%200%200%201%20.22.19.47.47%200%200%201%20.07.26V7.2a10.46%2010.46%200%200%201%202.87-2.36%206.17%206.17%200%200%201%202.88-.75%206.41%206.41%200%200%201%202.87.58%205.16%205.16%200%200%201%201.88%201.54%206.15%206.15%200%200%201%201%202.26%2013.46%2013.46%200%200%201%20.31%203.11z%22%20fill%3D%22%23fff%22%2F%3E%3Cpath%20d%3D%22M43.35%202.86c.09%202.6%201.89%204%205.48%204.61%203%20.48%205.79.24%206.69-2.37%201.75-5.09-2.4-3.82-6-4.39s-6.31-2.03-6.17%202.15zm1.08%2010.69c.33%201.94%202.14%203.06%204.91%203s4.84-1.16%205.13-3.25c.53-3.88-2.53-2.38-5.3-2.3s-5.4-1.26-4.74%202.55zM48%2022.44c.55%201.45%202.06%202.06%204.1%201.63s3.45-1.11%203.33-2.76c-.21-3.06-2.22-2.1-4.26-1.66S47%2019.6%2048%2022.44zm1.78%206.78c.16%201.22%201.22%202%202.88%201.93s2.92-.67%203.13-2c.4-2.43-1.46-1.53-3.12-1.51s-3.17-.82-2.89%201.58z%22%20fill%3D%22%23ff4000%22%2F%3E%3Cpath%20d%3D%22M35.28%2013.16a15.33%2015.33%200%200%201-.48%204%208.75%208.75%200%200%201-1.42%203%206.35%206.35%200%200%201-2.32%201.91%207.14%207.14%200%200%201-3.16.67%206.1%206.1%200%200%201-1.4-.15%205.34%205.34%200%200%201-1.26-.47%207.29%207.29%200%200%201-1.24-.81q-.61-.49-1.29-1.15v8.51a.47.47%200%200%201-.08.26.56.56%200%200%201-.25.19%201.74%201.74%200%200%201-.47.11%206.47%206.47%200%200%201-.78%200%206.26%206.26%200%200%201-.76%200%201.89%201.89%200%200%201-.48-.11.49.49%200%200%201-.25-.19.51.51%200%200%201-.07-.26V4.91a.57.57%200%200%201%20.06-.27.46.46%200%200%201%20.23-.18%201.47%201.47%200%200%201%20.44-.1%207.41%207.41%200%200%201%201.3%200%201.45%201.45%200%200%201%20.43.1.52.52%200%200%201%20.24.18.51.51%200%200%201%20.07.27V7.2a18.06%2018.06%200%200%201%201.49-1.38%209%209%200%200%201%201.45-1%206.82%206.82%200%200%201%201.49-.59%207.09%207.09%200%200%201%204.78.52%206%206%200%200%201%202.13%202%208.79%208.79%200%200%201%201.2%202.9%2015.72%2015.72%200%200%201%20.4%203.51zm-3.28.36a15.64%2015.64%200%200%200-.2-2.53%207.32%207.32%200%200%200-.69-2.17%204.06%204.06%200%200%200-1.3-1.51%203.49%203.49%200%200%200-2-.57%204.1%204.1%200%200%200-1.2.18%204.92%204.92%200%200%200-1.2.57%208.54%208.54%200%200%200-1.28%201A15.77%2015.77%200%200%200%2022.76%2010v6.77a13.53%2013.53%200%200%200%202.46%202.4%204.12%204.12%200%200%200%202.44.83%203.56%203.56%200%200%200%202-.57A4.28%204.28%200%200%200%2031%2018a7.58%207.58%200%200%200%20.77-2.12%2011.43%2011.43%200%200%200%20.23-2.36zM12%2017.3a5.39%205.39%200%200%201-.48%202.33%204.73%204.73%200%200%201-1.37%201.72%206.19%206.19%200%200%201-2.12%201.06%209.62%209.62%200%200%201-2.71.36%2010.38%2010.38%200%200%201-3.21-.5A7.63%207.63%200%200%201%201%2021.82a3.25%203.25%200%200%201-.66-.43%201.09%201.09%200%200%201-.3-.53%203.59%203.59%200%200%201-.04-.93%204.06%204.06%200%200%201%200-.61%202%202%200%200%201%20.09-.4.42.42%200%200%201%20.16-.22.43.43%200%200%201%20.24-.07%201.35%201.35%200%200%201%20.61.26q.41.26%201%20.56a9.22%209.22%200%200%200%201.41.55%206.25%206.25%200%200%200%201.87.26%205.62%205.62%200%200%200%201.44-.17%203.48%203.48%200%200%200%201.12-.5%202.23%202.23%200%200%200%20.73-.84%202.68%202.68%200%200%200%20.26-1.21%202%202%200%200%200-.37-1.21%203.55%203.55%200%200%200-1-.87%208.09%208.09%200%200%200-1.36-.66l-1.56-.61a16%2016%200%200%201-1.57-.73%206%206%200%200%201-1.37-1%204.52%204.52%200%200%201-1-1.4%204.69%204.69%200%200%201-.37-2%204.88%204.88%200%200%201%20.39-1.87%204.46%204.46%200%200%201%201.16-1.61%205.83%205.83%200%200%201%201.94-1.11A8.06%208.06%200%200%201%206.53%204a8.28%208.28%200%200%201%201.36.11%209.36%209.36%200%200%201%201.23.28%205.92%205.92%200%200%201%20.94.37%204.09%204.09%200%200%201%20.59.35%201%201%200%200%201%20.26.26.83.83%200%200%201%20.09.26%201.32%201.32%200%200%200%20.06.35%203.87%203.87%200%200%201%200%20.51%204.76%204.76%200%200%201%200%20.56%201.39%201.39%200%200%201-.09.39.5.5%200%200%201-.16.22.35.35%200%200%201-.21.07%201%201%200%200%201-.49-.21%207%207%200%200%200-.83-.44%209.26%209.26%200%200%200-1.2-.44%205.49%205.49%200%200%200-1.58-.16%204.93%204.93%200%200%200-1.4.18%202.69%202.69%200%200%200-1%20.51%202.16%202.16%200%200%200-.59.83%202.43%202.43%200%200%200-.2%201%202%202%200%200%200%20.38%201.24%203.6%203.6%200%200%200%201%20.88%208.25%208.25%200%200%200%201.38.68l1.58.62q.8.32%201.59.72a6%206%200%200%201%201.39%201%204.37%204.37%200%200%201%201%201.36%204.46%204.46%200%200%201%20.37%201.8z%22%20fill%3D%22%23fff%22%2F%3E%3C%2Fsvg%3E">
-</div></div>` : "";
+          <div class="spine-player-controls spine-player-popup-parent spine-player-controls-hidden">
+          <div class="spine-player-timeline"></div>
+          <div class="spine-player-buttons">
+          <button class="spine-player-button spine-player-button-icon-pause"></button>
+          <div class="spine-player-button-spacer"></div>
+          <button class="spine-player-button spine-player-button-icon-speed"></button>
+          <button class="spine-player-button spine-player-button-icon-animations"></button>
+          <button class="spine-player-button spine-player-button-icon-skins"></button>
+          <button class="spine-player-button spine-player-button-icon-settings"></button>
+          <button class="spine-player-button spine-player-button-icon-fullscreen"></button>
+          <img class="spine-player-button-icon-spine-logo" src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20104%2031.16%22%3E%3Cpath%20d%3D%22M104%2012.68a1.31%201.31%200%200%201-.37%201%201.28%201.28%200%200%201-.85.31H91.57a10.51%2010.51%200%200%200%20.29%202.55%204.92%204.92%200%200%200%201%202%204.27%204.27%200%200%200%201.64%201.26%206.89%206.89%200%200%200%202.6.44%2010.66%2010.66%200%200%200%202.17-.2%2012.81%2012.81%200%200%200%201.64-.44q.69-.25%201.14-.44a1.87%201.87%200%200%201%20.68-.2.44.44%200%200%201%20.27.04.43.43%200%200%201%20.16.2%201.38%201.38%200%200%201%20.09.37%204.89%204.89%200%200%201%200%20.58%204.14%204.14%200%200%201%200%20.43v.32a.83.83%200%200%201-.09.26%201.1%201.1%200%200%201-.17.22%202.77%202.77%200%200%201-.61.34%208.94%208.94%200%200%201-1.32.46%2018.54%2018.54%200%200%201-1.88.41%2013.78%2013.78%200%200%201-2.28.18%2010.55%2010.55%200%200%201-3.68-.59%206.82%206.82%200%200%201-2.66-1.74%207.44%207.44%200%200%201-1.63-2.89%2013.48%2013.48%200%200%201-.55-4%2012.76%2012.76%200%200%201%20.57-3.94%208.35%208.35%200%200%201%201.64-3%207.15%207.15%200%200%201%202.58-1.87%208.47%208.47%200%200%201%203.39-.65%208.19%208.19%200%200%201%203.41.64%206.46%206.46%200%200%201%202.32%201.73%207%207%200%200%201%201.3%202.54%2011.17%2011.17%200%200%201%20.43%203.13zm-3.14-.93a5.69%205.69%200%200%200-1.09-3.86%204.17%204.17%200%200%200-3.42-1.4%204.52%204.52%200%200%200-2%20.44%204.41%204.41%200%200%200-1.47%201.15A5.29%205.29%200%200%200%2092%209.75a7%207%200%200%200-.36%202zM80.68%2021.94a.42.42%200%200%201-.08.26.59.59%200%200%201-.25.18%201.74%201.74%200%200%201-.47.11%206.31%206.31%200%200%201-.76%200%206.5%206.5%200%200%201-.78%200%201.74%201.74%200%200%201-.47-.11.59.59%200%200%201-.25-.18.42.42%200%200%201-.08-.26V12a9.8%209.8%200%200%200-.23-2.35%204.86%204.86%200%200%200-.66-1.53%202.88%202.88%200%200%200-1.13-1%203.57%203.57%200%200%200-1.6-.34%204%204%200%200%200-2.35.83A12.71%2012.71%200%200%200%2069.11%2010v11.9a.42.42%200%200%201-.08.26.59.59%200%200%201-.25.18%201.74%201.74%200%200%201-.47.11%206.51%206.51%200%200%201-.78%200%206.31%206.31%200%200%201-.76%200%201.88%201.88%200%200%201-.48-.11.52.52%200%200%201-.25-.18.46.46%200%200%201-.07-.26v-17a.53.53%200%200%201%20.03-.21.5.5%200%200%201%20.23-.19%201.28%201.28%200%200%201%20.44-.11%208.53%208.53%200%200%201%201.39%200%201.12%201.12%200%200%201%20.43.11.6.6%200%200%201%20.22.19.47.47%200%200%201%20.07.26V7.2a10.46%2010.46%200%200%201%202.87-2.36%206.17%206.17%200%200%201%202.88-.75%206.41%206.41%200%200%201%202.87.58%205.16%205.16%200%200%201%201.88%201.54%206.15%206.15%200%200%201%201%202.26%2013.46%2013.46%200%200%201%20.31%203.11z%22%20fill%3D%22%23fff%22%2F%3E%3Cpath%20d%3D%22M43.35%202.86c.09%202.6%201.89%204%205.48%204.61%203%20.48%205.79.24%206.69-2.37%201.75-5.09-2.4-3.82-6-4.39s-6.31-2.03-6.17%202.15zm1.08%2010.69c.33%201.94%202.14%203.06%204.91%203s4.84-1.16%205.13-3.25c.53-3.88-2.53-2.38-5.3-2.3s-5.4-1.26-4.74%202.55zM48%2022.44c.55%201.45%202.06%202.06%204.1%201.63s3.45-1.11%203.33-2.76c-.21-3.06-2.22-2.1-4.26-1.66S47%2019.6%2048%2022.44zm1.78%206.78c.16%201.22%201.22%202%202.88%201.93s2.92-.67%203.13-2c.4-2.43-1.46-1.53-3.12-1.51s-3.17-.82-2.89%201.58z%22%20fill%3D%22%23ff4000%22%2F%3E%3Cpath%20d%3D%22M35.28%2013.16a15.33%2015.33%200%200%201-.48%204%208.75%208.75%200%200%201-1.42%203%206.35%206.35%200%200%201-2.32%201.91%207.14%207.14%200%200%201-3.16.67%206.1%206.1%200%200%201-1.4-.15%205.34%205.34%200%200%201-1.26-.47%207.29%207.29%200%200%201-1.24-.81q-.61-.49-1.29-1.15v8.51a.47.47%200%200%201-.08.26.56.56%200%200%201-.25.19%201.74%201.74%200%200%201-.47.11%206.47%206.47%200%200%201-.78%200%206.26%206.26%200%200%201-.76%200%201.89%201.89%200%200%201-.48-.11.49.49%200%200%201-.25-.19.51.51%200%200%201-.07-.26V4.91a.57.57%200%200%201%20.06-.27.46.46%200%200%201%20.23-.18%201.47%201.47%200%200%201%20.44-.1%207.41%207.41%200%200%201%201.3%200%201.45%201.45%200%200%201%20.43.1.52.52%200%200%201%20.24.18.51.51%200%200%201%20.07.27V7.2a18.06%2018.06%200%200%201%201.49-1.38%209%209%200%200%201%201.45-1%206.82%206.82%200%200%201%201.49-.59%207.09%207.09%200%200%201%204.78.52%206%206%200%200%201%202.13%202%208.79%208.79%200%200%201%201.2%202.9%2015.72%2015.72%200%200%201%20.4%203.51zm-3.28.36a15.64%2015.64%200%200%200-.2-2.53%207.32%207.32%200%200%200-.69-2.17%204.06%204.06%200%200%200-1.3-1.51%203.49%203.49%200%200%200-2-.57%204.1%204.1%200%200%200-1.2.18%204.92%204.92%200%200%200-1.2.57%208.54%208.54%200%200%200-1.28%201A15.77%2015.77%200%200%200%2022.76%2010v6.77a13.53%2013.53%200%200%200%202.46%202.4%204.12%204.12%200%200%200%202.44.83%203.56%203.56%200%200%200%202-.57A4.28%204.28%200%200%200%2031%2018a7.58%207.58%200%200%200%20.77-2.12%2011.43%2011.43%200%200%200%20.23-2.36zM12%2017.3a5.39%205.39%200%200%201-.48%202.33%204.73%204.73%200%200%201-1.37%201.72%206.19%206.19%200%200%201-2.12%201.06%209.62%209.62%200%200%201-2.71.36%2010.38%2010.38%200%200%201-3.21-.5A7.63%207.63%200%200%201%201%2021.82a3.25%203.25%200%200%201-.66-.43%201.09%201.09%200%200%201-.3-.53%203.59%203.59%200%200%201-.04-.93%204.06%204.06%200%200%201%200-.61%202%202%200%200%201%20.09-.4.42.42%200%200%201%20.16-.22.43.43%200%200%201%20.24-.07%201.35%201.35%200%200%201%20.61.26q.41.26%201%20.56a9.22%209.22%200%200%200%201.41.55%206.25%206.25%200%200%200%201.87.26%205.62%205.62%200%200%200%201.44-.17%203.48%203.48%200%200%200%201.12-.5%202.23%202.23%200%200%200%20.73-.84%202.68%202.68%200%200%200%20.26-1.21%202%202%200%200%200-.37-1.21%203.55%203.55%200%200%200-1-.87%208.09%208.09%200%200%200-1.36-.66l-1.56-.61a16%2016%200%200%201-1.57-.73%206%206%200%200%201-1.37-1%204.52%204.52%200%200%201-1-1.4%204.69%204.69%200%200%201-.37-2%204.88%204.88%200%200%201%20.39-1.87%204.46%204.46%200%200%201%201.16-1.61%205.83%205.83%200%200%201%201.94-1.11A8.06%208.06%200%200%201%206.53%204a8.28%208.28%200%200%201%201.36.11%209.36%209.36%200%200%201%201.23.28%205.92%205.92%200%200%201%20.94.37%204.09%204.09%200%200%201%20.59.35%201%201%200%200%201%20.26.26.83.83%200%200%201%20.09.26%201.32%201.32%200%200%200%20.06.35%203.87%203.87%200%200%201%200%20.51%204.76%204.76%200%200%201%200%20.56%201.39%201.39%200%200%201-.09.39.5.5%200%200%201-.16.22.35.35%200%200%201-.21.07%201%201%200%200%201-.49-.21%207%207%200%200%200-.83-.44%209.26%209.26%200%200%200-1.2-.44%205.49%205.49%200%200%200-1.58-.16%204.93%204.93%200%200%200-1.4.18%202.69%202.69%200%200%200-1%20.51%202.16%202.16%200%200%200-.59.83%202.43%202.43%200%200%200-.2%201%202%202%200%200%200%20.38%201.24%203.6%203.6%200%200%200%201%20.88%208.25%208.25%200%200%200%201.38.68l1.58.62q.8.32%201.59.72a6%206%200%200%201%201.39%201%204.37%204.37%200%200%201%201%201.36%204.46%204.46%200%200%201%20.37%201.8z%22%20fill%3D%22%23fff%22%2F%3E%3C%2Fsvg%3E">
+          </div></div>` : "";
       this.parent.appendChild(this.dom = createElement(`<div class="spine-player" style="position:relative;height:100%"><canvas class="spine-player-canvas" style="display:block;width:100%;height:100%"></canvas>${controls}</div>`));
       try {
         this.validateConfig(config);
@@ -12125,6 +12155,48 @@ ${e.message}`, e);
           if (!this.paused) {
             this.animationState.update(playDelta);
             this.animationState.apply(skeleton);
+              //###plus
+              //1.this.autoBone
+              if(window.first!=false)window.first=true
+              // ==""&&(window.first=true);
+              if(window.first){
+                window.first=false
+                var i=new AutoBoneloader();
+                window.abl=new AutoBoneloader();
+                window.abt=[]
+                  // i.AutoBone=
+                  for(var key in skeleton.extra){
+                    i=new AutoBoneloader();
+                    //lean 如不重新初始化 i连接的对象都相同 this. 会修改已经加入数组的每一个对象值 （数组中每个值都一样）
+                    i.AutoBonee(skeleton.extra[key], this)
+                    var temp=i;
+                    window.abt.push(temp)
+                    // window.abt.splice(-1,0,i)
+                  }
+                  console.log('a');
+              }
+                  this.AutoBone=window.abt;
+                  var ie = 1,
+                  a = null;
+                  // o = 1;
+                var e=0;
+                var u = e / .0167;
+                if(window.o==null)window.o=0
+                // if(window.date==null)window.date=new Date();
+                // o=Math.random()*1;
+
+                o+=0.01;
+                //o因该是时间
+                  console.log(skeleton.bones);
+                for (var key in this.AutoBone) {
+                  window.at=this.AutoBone[key]
+                  // window.abl.render(u, o, ie, a)
+                  this.AutoBone[key].render(u, window.o, ie, a)
+                  // console.log(this.AutoBone[key]);
+                }
+
+
+                //
             skeleton.updateWorldTransform();
             if (config.showControls) {
               this.playTime += playDelta;
@@ -12557,3 +12629,398 @@ new spine.SpinePlayer("player-container", {
   return src_exports;
 })();
 //# sourceMappingURL=spine-player.js.map
+var AutoBoneloader=class{
+  constructor(){
+    this.animations=[]
+    this.AutoBone=[];
+    this.autoBoneSpeed={}
+  }
+  AutoBonee(t, n){
+    // u(this, e);
+    var r = t || {},
+        a = r.animation,
+        o = void 0 === a ? {} : a,
+        s = r.rootBoneName,
+        c = void 0 === s ? "" : s,
+        v = r.endBoneName,
+        f = void 0 === v ? "" : v,
+        animationTemp= 
+        // (0, i.fromEntries)
+        (Object.keys(o).map((
+          function(e) {
+            return [e, o[e]]
+          }
+        )).map((
+          function (t) {
+            var n = function (e, t) {
+                if (Array.isArray(e)) return e;
+                if (Symbol.iterator in Object(e)) return function (e, t) {
+                    var n = [],
+                        r = !0,
+                        i = !1,
+                        a = void 0;
+                    try {
+                        for (var o, u = e[Symbol.iterator](); !(r = (o = u.next()).done) && (n.push(o.value), !t || n.length !== t); r = !0);
+                    } catch (e) {
+                        i = !0, a = e
+                    } finally {
+                        try {
+                            !r && u.return && u.return()
+                        } finally {
+                            if (i) throw a
+                        }
+                    }
+                    return n
+                }(e, t);
+                throw new TypeError("Invalid attempt to destructure non-iterable instance")
+            }(t, 2),
+                r = n[0],
+                i = n[1];
+                var temp=window.abl.createAnimation(i);
+                // console.log(temp);
+            return [r, temp]
+        }
+        )));
+        var end=Object.fromEntries(animationTemp);
+        // Object.fromEntries 数组转对象
+        // console.log(end);
+        this.animation=Object.fromEntries(animationTemp);;
+     this.rootMovement = 0, this.rootBoneName = c, this.endBoneName = f, this.history = new l, this.bind(n)
+    //  console.log(n);
+  }
+  bind(e) {
+
+      
+    // var temp={},
+    this.spineObj = e, this.rootBone = e.skeleton.findBone(this.rootBoneName);
+    this.init(this.rootBone)
+    // console.log(this.rootBone);
+    // window.at.spineObj=spineObj;
+    // window.at.rootBone=rootBone;
+    // return temp
+  };
+  /*key: "findBone",
+                        value: function (e) {
+                            if (!e) throw new Error("boneName cannot be null.");
+                            for (var t = this.bones, n = 0, r = t.length; n < r; n++) {
+                                var i = t[n];
+                                if (i.data.name == e) return i
+                            }
+                            return null
+                        }
+  */
+  findBone(e) {
+    if (!e) throw new Error("boneName cannot be null.");
+    // var t=
+    for (var t = this.bones, n = 0, r = t.length; n < r; n++) {
+      var i = t[n];
+      if (i.data.name == e) return i
+    }
+    return null
+  }
+  init(e) {
+    if(isInit==null){var isInit=false}
+    var t = this,
+      n = arguments.length > 1 && void 0 !== arguments[1] ? arguments[1] : 0;
+    
+    if(!isInit){ e.initX = e.x, e.initY = e.y, e.initWorldX = e.worldX, e.initWorldY = e.worldY, e.initScaleX = e.scaleX, e.initScaleY = e.scaleY, 
+      
+      e.initRotation = e.rotation, e.autoMovePrevWorldX = e.worldX, e.autoMovePrevWorldY = e.worldY,
+      isInit=true;
+      // e.children.forEach((function (e) {
+      //   t.init(e, n + 1)
+      // }))
+      // e.children
+      n = 0;
+      for (var key in e.children) {
+        t.init(e.children[key], n + 1)
+        // n += 1;
+      }
+    }
+  }
+  reset() {
+    this.rootMovement = 0, this.resetBone()
+  }
+  resetBone() {
+    var e = this,
+      t = arguments.length > 0 && void 0 !== arguments[0] ? arguments[0] : this.rootBone;
+    t.worldX = t.initWorldX, t.worldY = t.initWorldY, t.scaleX = t.initScaleX, t.scaleY = t.initScaleY, t.rotation = t.initRotation, t.name !== this.endBoneName && t.children.forEach((function (t) {
+      e.resetBone(t)
+    }))
+  }
+  render(e, t, n, r) {
+    var i = null,
+      a = this.currentAnimation(),
+      o = this.currentTrackName(),
+      u = 1;
+    // this.history.current || this.history.check(this.currentTrackName, a),
+    r && o !== r && (i = this.animation[r] || this.defaultAnimation,
+      this.history.check(o, a)),
+      i && 1 !== n && (u = n, this.renderAutoBone(i, null, e, t, 1)), 
+      this.renderAutoBone(a, null, e, t, u)
+    //入口
+    // renderAutoBone 实现智能骨骼的渲染
+  }
+  renderAutoBone(e, t, n, r, i) {
+    var a = e.mode;
+    if (1 === a) this.updateSineMode(e, r, this.rootBone, n, i);
+    else if (2 === a) this.updatePhysicMode(e, t, this.rootBone, r, n, i);
+    else if (3 === a) {
+      var o = e.moveXFreq,
+        u = e.moveXAmp,
+        s = e.moveXOctaves,
+        l = e.moveXDelay,
+        c = e.moveXCenter,
+        v = e.moveYSameAsX,
+        f = e.moveXSeed,
+        h = 0 === u ? 0 : this.updateWiggleMode(o, u, s, r, l) + c;
+      if (this.rootBone.x = this.mixValue(this.rootBone.x, this.rootBone.initX + h, i), v) h = 0 === u ? 0 : this.updateWiggleMode(o, u, s, r, l + f) + c, this.rootBone.y = this.mixValue(this.rootBone.y, this.rootBone.initY + h, i);
+      else {
+        var m = e.moveYFreq,
+          d = e.moveYAmp,
+          p = e.moveYOctaves,
+          g = e.moveYDelay,
+          y = e.moveYCenter;
+        h = 0 === d ? 0 : this.updateWiggleMode(m, d, p, r, g) + y, this.rootBone.y = this.mixValue(this.rootBone.y, this.rootBone.initY + h, i)
+      }
+      var A = e.rotateSpeed,
+        _ = e.rotateFreq,
+        x = e.rotateAmp,
+        b = e.rotateOctaves,
+        w = e.rotateDelay,
+        E = e.rotateCenter;
+      h = this.rootBone.initRotation + r * A * 360, h += 0 === x ? 0 : this.updateWiggleMode(_, x, b, r, w) + E, this.rootBone.rotation = this.mixValue(this.rootBone.rotation, h, i);
+      var S = e.scaleXFreq,
+        C = e.scaleXAmp,
+        k = e.scaleXOctaves,
+        T = e.scaleXDelay,
+        M = e.scaleXCenter,
+        B = e.scaleYSameAsX;
+      if (h = 0 === C ? 0 : this.updateWiggleMode(S, C, k, r, T) + M, this.rootBone.scaleX = this.mixValue(this.rootBone.scaleX, this.rootBone.initScaleX + h, i), B) this.rootBone.scaleY = this.mixValue(this.rootBone.scaleY, this.rootBone.initScaleY + h, i);
+      else {
+        var I = e.scaleYFreq,
+          D = e.scaleYAmp,
+          O = e.scaleYOctaves,
+          L = e.scaleYDelay,
+          R = e.scaleYCenter;
+        h = 0 === D ? 0 : this.updateWiggleMode(I, D, O, r, L) + R, this.rootBone.scaleY = this.mixValue(this.rootBone.scaleY, this.rootBone.initScaleY + h, i)
+      }
+    }
+  }
+  getHistoryRotate(e, t) {
+    for (var n = t.length - 1; n > -1; n--) {
+      var r = t[n];
+      if (r.time > e) {
+        for (var i = n - 1; i > -1; i--) {
+          var a = t[i];
+          if (e >= a.time) return a.delta + (r.delta - a.delta) * (e - a.time) / (r.time - a.time)
+        }
+        return 0
+      }
+    }
+    return 0
+  }
+  mixValue(e, t, n) {
+    return e + (t - e) * n
+  }
+  updateSineMode(e, t) {
+    var n = arguments.length > 2 && void 0 !== arguments[2] ? arguments[2] : this.rootBone,
+      r = this,
+      i = arguments.length > 3 && void 0 !== arguments[3] ? arguments[3] : 0,
+      a = arguments[4],
+      temp;
+    n.data.name !== this.endBoneName && 
+    ( n.rotation = this.mixValue(
+      n.rotation, n.initRotation + Math.sin((e.rotateOffset - Math.pow(e.childOffset * i, 1 + e.spring) + t)
+         * Math.PI * 2 / e.rotateTime) 
+        * e.rotateRange * Math.pow(1 + i * e.affectByLevel, 1 + e.springLevel) 
+        + e.rotateCenter, a), 
+      // console.log(Math.sin((e.rotateOffset - Math.pow(e.childOffset * i, 1 + e.spring) + t)
+      // * Math.PI * 2 / e.rotateTime) ),
+      // console.log(e.rotateRange * Math.pow(1 + i * e.affectByLevel, 1 + e.springLevel) 
+      // ),
+      n.children.forEach((function (g) {
+      r.updateSineMode(e, t, g, i + 1, a)
+    })))
+  }
+  updateWiggleMode(e, t, n, r, i) {
+    for (var a = arguments.length > 5 && void 0 !== arguments[5] ? arguments[5] : .5, o = 0, u = 1, s = n + 1, l = 1 / (2 - 1 / Math.pow(2, s - 1)), c = l, v = 0, f = 0; f < s; f++) o += u * Math.sin(r * c * Math.PI * 2 / e + i), c = l * Math.pow(2, f + 1), v += u, u *= a;
+    return o / v * t
+  }
+  updatePhysicMode(e, t, n, r, i, a) {
+    var o = this,
+      u = Math.min(e.limitRange, Math.max(-e.limitRange, n.autoMovePrevWorldX - n.worldX)),
+      s = Math.min(e.limitRange, Math.max(-e.limitRange, n.autoMovePrevWorldY - n.worldY));
+    t.speedX += (e.affectByX * u - t.speedX) * e.speed * i, t.speedY += (e.affectByY * s - t.speedY) * e.speed * i, n.autoMovePrevWorldX = n.worldX, n.autoMovePrevWorldY = n.worldY;
+    var l = e.affectByRange * (-t.speedX * n.c + t.speedY * n.d);
+    n.rotation = this.mixValue(n.rotation, l + n.initRotation, a), t.buffer.push({
+      time: r,
+      delta: l
+    }), t.buffer.length > 300 && t.buffer.shift(), n.children.forEach((function (n) {
+      o.updateFollowMode(e, t, n, r, 1, a)
+    }))
+  }
+  updateFollowMode(e, t, n, r, i, a) {
+    var o = this;
+    n.data.name !== this.endBoneName && (n.rotation = this.mixValue(n.rotation, n.initRotation + this.getHistoryRotate(r - e.delay * (1 + i * e.spring), t.buffer) * e.rotateMoveRange * Math.pow(1 + i * e.affectByLevel, 1 + e.springLevel), a), n.children.forEach((function (n) {
+      o.updateFollowMode(e, t, n, r, i + 1, a)
+    })))
+  }
+  currentTrackName() {
+    // return this.spineObj.state.tracks.length ? this.spineObj.state.tracks[0].animation.name : ""
+    return "animation";
+  }
+  currentAnimation() {
+    // var e = this.spineObj.state.tracks[0].animation.name;
+    var e = "animation";
+    // return this.animation[e] || this.defaultAnimation
+    // this=window.at
+    // for (var key in window.at) {
+    //   this[key] = window.at[key]
+    // }
+    // return this.animation[e] || this.animation["default"];
+    // return window.at.animation[e] || window.at.animation["default"];
+    return this.animation.default || this.animation["default"];
+  }
+  defaultAnimation() {
+    return this.animation.default
+  }
+  createAnimation(e) {
+    switch (e.mode) {
+      case 1:
+        // return new this.v();
+        var ee;
+        ee=this.v(e);
+        return ee;
+      case 2:
+        return new c(e);
+      case 3:
+        var fa;
+        // return new f(e);
+        fa = this.f(e)
+        return fa;
+      default:
+        throw new Error("unknown mode:" + e.mode)
+    }
+  }
+  v(e) {
+    function t(e) {
+      // u(this, t);
+      // var n = a(this, (t.__proto__ || Object.getPrototypeOf(t)).call(this, e));
+      var n={}
+      n=copy(e)
+      n.mode=e.mode;
+      n.name=e.name;
+      return n
+    }
+    function copy(e) {
+      var t = e || {},
+        n = t.rotateOffset,
+        r = void 0 === n ? 0 : n,
+        i = t.rotateTime,
+        a = void 0 === i ? 2 : i,
+        o = t.rotateRange,
+        u = void 0 === o ? 10 : o,
+        s = t.rotateCenter,
+        l = void 0 === s ? 0 : s,
+        c = t.childOffset,
+        v = void 0 === c ? .25 : c,
+        f = t.spring,
+        h = void 0 === f ? 0 : f,
+        m = t.affectByLevel,
+        d = void 0 === m ? .1 : m,
+        p = t.springLevel,
+        g = void 0 === p ? 0 : p;
+        var temp={};
+        temp.rotateOffset = r, temp.rotateCenter = l, temp.rotateTime = a, temp.rotateRange = u, temp.affectByLevel = d, temp.springLevel = g, temp.spring = h, temp.childOffset = v
+      return temp;
+    }
+    return t(e)
+  }
+  f(e) {
+
+    function t(e) {
+      // u(this, t);
+      // var n = a(this, (t.__proto__ || Object.getPrototypeOf(t)).call(this, e));
+      var n = {};
+      n = copy(e);
+      n.mode = e.mode;
+      n.name = e.name;
+
+
+      return n;
+      function copy(e) {
+        var t = e || {},
+          n = t.moveXFreq,
+          r = void 0 === n ? 1 : n,
+          i = t.moveXAmp,
+          a = void 0 === i ? 0 : i,
+          o = t.moveXOctaves,
+          u = void 0 === o ? 0 : o,
+          s = t.moveXDelay,
+          l = void 0 === s ? 0 : s,
+          c = t.moveXCenter,
+          v = void 0 === c ? 0 : c,
+          f = t.moveXSeed,
+          h = void 0 === f ? Math.floor(1e4 * Math.random()) : f,
+          m = t.moveYFreq,
+          d = void 0 === m ? r : m,
+          p = t.moveYAmp,
+          g = void 0 === p ? a : p,
+          y = t.moveYOctaves,
+          A = void 0 === y ? u : y,
+          _ = t.moveYDelay,
+          x = void 0 === _ ? l : _,
+          b = t.moveYCenter,
+          w = void 0 === b ? v : b,
+          E = t.scaleXFreq,
+          S = void 0 === E ? 1 : E,
+          C = t.scaleXAmp,
+          k = void 0 === C ? 0 : C,
+          T = t.scaleXOctaves,
+          M = void 0 === T ? 0 : T,
+          B = t.scaleXDelay,
+          I = void 0 === B ? 0 : B,
+          D = t.scaleXCenter,
+          O = void 0 === D ? 0 : D,
+          L = t.scaleYFreq,
+          R = void 0 === L ? S : L,
+          P = t.scaleYAmp,
+          F = void 0 === P ? k : P,
+          N = t.scaleYOctaves,
+          U = void 0 === N ? M : N,
+          X = t.scaleYDelay,
+          Y = void 0 === X ? I : X,
+          j = t.scaleYCenter,
+          Q = void 0 === j ? O : j,
+          z = t.rotateSpeed,
+          H = void 0 === z ? 0 : z,
+          G = t.rotateFreq,
+          V = void 0 === G ? 1 : G,
+          q = t.rotateAmp,
+          W = void 0 === q ? 0 : q,
+          J = t.rotateOctaves,
+          K = void 0 === J ? 0 : J,
+          Z = t.rotateDelay,
+          $ = void 0 === Z ? 0 : Z,
+          ee = t.rotateCenter,
+          te = void 0 === ee ? 0 : ee;
+        var temp = {}
+        temp.moveXFreq = r, temp.moveXAmp = a, temp.moveXOctaves = u, temp.moveXDelay = l, temp.moveXCenter = v, temp.moveXSeed = h, temp.moveYFreq = d, temp.moveYAmp = g, temp.moveYOctaves = A, temp.moveYDelay = x, temp.moveYCenter = w, temp.moveYSameAsX = r === d && a === g && u === A && l === x && v === w, temp.scaleXFreq = S, temp.scaleXAmp = k, temp.scaleXOctaves = M, temp.scaleXDelay = I, temp.scaleXCenter = O, temp.scaleYFreq = R, temp.scaleYAmp = F, temp.scaleYOctaves = U, temp.scaleYDelay = Y, temp.scaleYCenter = Q, temp.scaleYSameAsX = S === R && k === F && M === U && I === Y && O === Q, temp.rotateSpeed = H, temp.rotateFreq = V, temp.rotateAmp = W, temp.rotateOctaves = K, temp.rotateDelay = $, temp.rotateCenter = te
+        return temp;
+
+      }
+    }
+
+    return t(e);
+  }
+}
+class l {
+  constructor(){
+    this.current = null, this.previous = null, this.currentTrackName = ""
+  
+  }
+  check(e, t) {
+    e !== this.currentTrackName && (this.previous = this.current, this.current = null, this.currentTrackName = e)
+  }
+}
