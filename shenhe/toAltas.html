@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <textarea name="" id="input" cols="30" rows="10">
+</textarea>
+    <button onclick="toAltas()">reshap</button>
+    <!-- <div id="output" style="white-space: pre-wrap"></div> -->
+    <div id="output"></div>
+</body>
+<script>
+    
+
+    function toAltas(){
+        var str=document.getElementById('input').value;
+        // var str
+        console.log(str);
+        //替换所有的换行符
+        str = str.replace(/\r\n/g,"<br>")
+        str = str.replace(/\\n/g,"<br>")
+        str = str.replace(/bounds/g,"&nbsp&nbsp&nbsp&nbspbounds")
+        str = str.replace(/rotate/g,"&nbsp&nbsp&nbsp&nbsprotate")
+        // str = str.replace(/bounds/g,"    bounds")
+        // str = str.replace(/bounds/g,"    bounds")
+
+        
+        
+        document.getElementById('output').innerHTML=str;
+    }
+    
+</script>
+</html>
